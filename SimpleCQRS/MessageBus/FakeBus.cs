@@ -1,29 +1,31 @@
-﻿using System;
+﻿using SimpleCQRS.Commands;
+using SimpleCQRS.Domain;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace SimpleCQRS
+namespace SimpleCQRS.MessageBus
 {
     public class FakeBus : ICommandSender, IEventPublisher
     {
-        private readonly Dictionary<Type, List<Action<Message>>> _routes = new Dictionary<Type, List<Action<Message>>>();
+        private readonly Dictionary<Type, List<Action<IMessage>>> _routes = new Dictionary<Type, List<Action<IMessage>>>();
 
-        public void RegisterHandler<T>(Action<T> handler) where T : Message
+        public void RegisterHandler<T>(Action<T> handler) where T : IMessage
         {
-            List<Action<Message>> handlers;
+            List<Action<IMessage>> handlers;
 
-            if(!_routes.TryGetValue(typeof(T), out handlers))
+            if (!_routes.TryGetValue(typeof(T), out handlers))
             {
-                handlers = new List<Action<Message>>();
+                handlers = new List<Action<IMessage>>();
                 _routes.Add(typeof(T), handlers);
             }
 
-            handlers.Add((x => handler((T)x)));
+            handlers.Add(x => handler((T)x));
         }
 
         public void Send<T>(T command) where T : Command
         {
-            List<Action<Message>> handlers;
+            List<Action<IMessage>> handlers;
 
             if (_routes.TryGetValue(typeof(T), out handlers))
             {
@@ -38,31 +40,16 @@ namespace SimpleCQRS
 
         public void Publish<T>(T @event) where T : Event
         {
-            List<Action<Message>> handlers;
+            List<Action<IMessage>> handlers;
 
             if (!_routes.TryGetValue(@event.GetType(), out handlers)) return;
 
-            foreach(var handler in handlers)
+            foreach (var handler in handlers)
             {
                 //dispatch on thread pool for added awesomeness
                 var handler1 = handler;
                 ThreadPool.QueueUserWorkItem(x => handler1(@event));
             }
         }
-    }
-
-    public interface Handles<T>
-    {
-        void Handle(T message);
-    }
-
-    public interface ICommandSender
-    {
-        void Send<T>(T command) where T : Command;
-
-    }
-    public interface IEventPublisher
-    {
-        void Publish<T>(T @event) where T : Event;
     }
 }
