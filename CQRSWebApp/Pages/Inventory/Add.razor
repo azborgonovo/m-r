@@ -1,0 +1,45 @@
+﻿@page "/inventory/add"
+
+<PageTitle>Add Inventory Item</PageTitle>
+
+@using CQRSWebApp.Data
+@inject InventoryItemsService InventoryItemsService
+@inject NavigationManager NavigationManager
+
+<h1>Add Inventory Item</h1>
+
+<form @onsubmit="CreateItem">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="form-group">
+                <label for="Name" class="control-label">Name</label>
+                <input form="Name" class="form-control" required="true" @bind="@name" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Save"/>
+                <input type="button" class="btn btn-link" @onclick="@Cancel" value="Cancel"/>
+            </div>
+        </div>
+    </div>
+</form>
+
+@code {
+
+    private string name;
+
+    void CreateItem()
+    {
+        InventoryItemsService.CreateInventoryItem(name);
+        NavigationManager.NavigateTo("inventory", true);
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("inventory");
+    }
+}

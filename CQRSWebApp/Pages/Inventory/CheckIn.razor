@@ -1,0 +1,72 @@
+﻿@page "/inventory/checkin/{Id}"
+
+<PageTitle>Check-in Items to Inventory</PageTitle>
+
+@using CQRSWebApp.Data
+@using SimpleCQRS.ReadModel
+@inject InventoryItemsService InventoryItemsService
+@inject NavigationManager NavigationManager
+
+<h1>Check-in Items to Inventory</h1>
+
+@if (inventoryItemDetailsDto == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <form @onsubmit="Submit">
+        <div class="alert alert-danger" role="alert" hidden="@(exception == null)">@exception?.Message</div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label for="Number" class="control-label">Number</label>
+                    <input form="Number" class="form-control" required="true" type="number" @bind-value="@number" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary" value="Submit"/>
+                    <input type="button" class="btn btn-link" @onclick="@Cancel" value="Cancel"/>
+                </div>
+            </div>
+        </div>
+    </form>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private InventoryItemDetailsDto? inventoryItemDetailsDto;
+    private int number;
+    private Exception? exception;
+
+    protected override void OnInitialized()
+    {
+        var guid = Guid.Parse(Id);
+        inventoryItemDetailsDto = InventoryItemsService.GetInventoryItemDetails(guid);
+    }
+
+    void Submit()
+    {
+        try
+        {
+            exception = null;
+            InventoryItemsService.CheckInItemsToInventory(inventoryItemDetailsDto.Id, number, inventoryItemDetailsDto.Version);
+            NavigationManager.NavigateTo("inventory");
+        }
+        catch (Exception e)
+        {
+            exception = e;
+        }
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("inventory");
+    }
+}

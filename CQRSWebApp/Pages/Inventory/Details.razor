@@ -1,0 +1,80 @@
+﻿@page "/inventory/details/{Id}"
+
+<PageTitle>Inventory Item Details</PageTitle>
+
+@using CQRSWebApp.Data
+@using SimpleCQRS.ReadModel
+@inject InventoryItemsService InventoryItemsService
+@inject NavigationManager NavigationManager
+
+<h1>Inventory Item Details</h1>
+
+@if (inventoryItemDetails == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <form>
+        <div class="row">
+            <div class=" col-md-8">
+                <div class="form-group">
+                    <label>Id:</label>
+                    <label>@inventoryItemDetails.Id</label>
+                </div>
+                <div class="form-group">
+                    <label>Name:</label>
+                    <label>@inventoryItemDetails.Name</label>
+                </div>
+                <div class="form-group">
+                    <label>Count:</label>
+                    <label>@inventoryItemDetails.CurrentCount</label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" @onclick="@Rename" value="Rename" />
+                    <input type="button" class="btn btn-primary" @onclick="@CheckIn" value="Check in" />
+                    <input type="button" class="btn btn-primary" @onclick="@Remove" value="Remove" />
+                    <input type="button" class="btn btn-danger" @onclick="@Deactivate" value="Deactivate" />
+                </div>
+            </div>
+        </div>
+    </form>
+}
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    private InventoryItemDetailsDto? inventoryItemDetails;
+
+    protected override void OnInitialized()
+    {
+        var guid = Guid.Parse(Id);
+        inventoryItemDetails = InventoryItemsService.GetInventoryItemDetails(guid);
+    }
+
+    void Rename()
+    {
+        NavigationManager.NavigateTo($"inventory/rename/{Id}");
+    }
+
+    void CheckIn()
+    {
+        NavigationManager.NavigateTo($"inventory/checkin/{Id}");
+    }
+
+    void Remove()
+    { 
+        NavigationManager.NavigateTo($"inventory/remove/{Id}");
+    }
+
+    void Deactivate()
+    { 
+        NavigationManager.NavigateTo($"inventory/deactivate/{Id}");
+    }
+}
+

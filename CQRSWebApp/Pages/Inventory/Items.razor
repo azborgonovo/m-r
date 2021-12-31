@@ -1,0 +1,55 @@
+﻿@page "/inventory"
+
+<PageTitle>Inventory Items</PageTitle>
+
+@using CQRSWebApp.Data
+@using SimpleCQRS.ReadModel
+@inject InventoryItemsService InventoryItemsService
+
+<NavLink class="nav-link" href="inventory/add">
+    <span class="oi oi-plus" aria-hidden="true">Add New</span>
+</NavLink>
+
+<h1>Inventory Items</h1>
+
+@if (inventoryItems == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!inventoryItems.Any())
+{
+    <p><em>The inventory is empty. Add a new item to start.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var inventoryItem in inventoryItems)
+            {
+                <tr>
+                    <td>@inventoryItem.Name</td>
+                    <td>
+                        <a class="nav-link" href="inventory/details/@inventoryItem.Id">
+                            <span class="oi oi-magnifying-glass" aria-hidden="true">Details</span>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<InventoryItemListDto>? inventoryItems;
+
+    protected override void OnInitialized()
+    {
+        inventoryItems = InventoryItemsService.GetInventoryItems();
+    }
+}
